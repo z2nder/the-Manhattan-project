@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Manhattan Project</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=Newsreader:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#E4E8EC;--ink:#18222F;--mute:#55616F;--acc:#B85C14;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#172231;--ink:#ECE7DD;--mute:#9AA6B4;--acc:#F0A23B}}
+:root[data-theme="dark"]{--bg:#172231;--ink:#ECE7DD;--mute:#9AA6B4;--acc:#F0A23B}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:"Newsreader",Georgia,serif;font-size:clamp(1.1rem,2.4vw,1.6rem);overflow:hidden}
+.deck{height:100%;position:relative}
+.slide{position:absolute;inset:0;display:none;flex-direction:column;justify-content:center;gap:1.4rem;padding:5vw 8vw 5.5rem}
+.slide.on{display:flex}
+h1,h2,.big{font-family:"Bricolage Grotesque","Helvetica Neue",Arial,sans-serif;margin:0;line-height:1.02;letter-spacing:-.02em}
+h1{font-size:clamp(2.6rem,9vw,7rem);font-weight:800}
+h2{font-size:clamp(2rem,6vw,4.6rem);font-weight:800;max-width:18ch}
+.big{font-size:clamp(4rem,19vw,13rem);font-weight:800;color:var(--acc)}
+p{margin:0;max-width:30ch;color:var(--mute)}
+.rule{width:min(40vw,14rem);height:6px;background:var(--acc)}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(11rem,1fr));gap:2rem}
+.row div{border-top:4px solid var(--acc);padding-top:.8rem}
+.row b{display:block;font-family:"Bricolage Grotesque",Arial,sans-serif;font-size:1.5em;color:var(--ink);line-height:1.1}
+.row span{color:var(--mute)}
+.q{font-style:italic;color:var(--acc);font-size:1.3em}
+nav{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:space-between;align-items:center;padding:12px 5vw calc(12px + env(safe-area-inset-bottom,0px));font-family:"Bricolage Grotesque",Arial,sans-serif;color:var(--mute)}
+
+.btn{display:inline-flex;align-items:center;gap:.5rem;font:600 1rem "Bricolage Grotesque",Arial,sans-serif;padding:.65rem 1.3rem;border-radius:999px;border:2px solid var(--acc);cursor:pointer;transition:transform .2s,box-shadow .2s,background .2s,color .2s}
+.btn svg{width:1.1em;height:1.1em;transition:transform .2s}
+.solid{background:var(--acc);color:var(--bg)}
+.ghost{background:transparent;color:var(--ink)}
+.ghost:hover{background:var(--acc);color:var(--bg)}
+.btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px -8px var(--acc)}
+.btn:active{transform:scale(.96)}
+#next:hover svg{transform:translateX(4px)}
+#prev:hover svg{transform:translateX(-4px)}
+.btn:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+.btn:disabled{opacity:.3;pointer-events:none}
+.progress{position:fixed;left:0;right:0;top:env(safe-area-inset-top,0px);height:5px}
+.progress i{display:block;height:100%;width:0;background:var(--acc);transition:width .5s cubic-bezier(.2,.7,.2,1)}
+@keyframes rise{from{opacity:0;transform:translate(var(--dx,0),24px)}to{opacity:1;transform:none}}
+@keyframes grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes pop{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:none}}
+.slide.on>*{animation:rise .6s cubic-bezier(.2,.7,.2,1) both}
+.slide.on>*:nth-child(2){animation-delay:.12s}
+.slide.on>*:nth-child(3){animation-delay:.24s}
+.slide.on>*:nth-child(4){animation-delay:.36s}
+.slide.on>.row{animation:none}
+.slide.on>.rule{transform-origin:left;animation:grow .8s .2s cubic-bezier(.2,.7,.2,1) both}
+.slide.on>.big{animation:pop .7s cubic-bezier(.2,.9,.3,1.2) both}
+.slide.on>.q{animation-delay:.9s}
+.slide.on .row>div{animation:rise .55s cubic-bezier(.2,.7,.2,1) both}
+.slide.on .row>div:nth-child(1){animation-delay:.35s}
+.slide.on .row>div:nth-child(2){animation-delay:.45s}
+.slide.on .row>div:nth-child(3){animation-delay:.55s}
+.slide.on .row>div:nth-child(4){animation-delay:.65s}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+body[data-mode="presenter"] .deck,body[data-mode="presenter"] .progress,body[data-mode="presenter"] nav{display:none}
+body:not([data-mode="presenter"]) #presenter{display:none}
+.modebtn{display:none;position:fixed;right:max(12px,env(safe-area-inset-right,0px));top:calc(14px + env(safe-area-inset-top,0px));z-index:5;padding:.4rem .9rem;font-size:.9rem}
+@media (hover:none){body:not([data-mode="presenter"]) .modebtn{display:inline-flex}}
+#presenter{position:fixed;inset:0;display:grid;grid-template-rows:auto 1fr auto;padding-top:env(safe-area-inset-top,0px);background:var(--bg);color:var(--ink);font-family:"Newsreader",Georgia,serif}
+#presenter header{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.8rem 2rem;font-family:"Bricolage Grotesque",Arial,sans-serif}
+#presenter header .btn{padding:.4rem 1rem;font-size:.9rem}
+#pstat{color:var(--mute);font-size:.95rem}
+#pstat:before{content:"";display:inline-block;width:.6rem;height:.6rem;border-radius:50%;background:var(--mute);margin-right:.5rem}
+#pstat.on:before{background:var(--acc)}
+#presenter main{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:2rem;padding:.5rem 2rem 1rem;min-height:0}
+@media (max-width:760px){#presenter main{grid-template-columns:1fr;overflow:auto}}
+.pcol{min-height:0;overflow:auto}
+.pcol h3{font:600 1rem "Bricolage Grotesque",Arial,sans-serif;color:var(--mute);margin:0 0 .5rem}
+#mock{container-type:inline-size;aspect-ratio:16/9;border:2px solid var(--mute);border-radius:10px;overflow:hidden;margin-bottom:1.2rem}
+.mi{height:100%;box-sizing:border-box;padding:5cqw;display:flex;flex-direction:column;justify-content:center;gap:2cqw}
+.mh1,.mh2,.mbig{font-family:"Bricolage Grotesque",Arial,sans-serif;font-weight:800;line-height:1.05}
+.mh1{font-size:7cqw}.mh2{font-size:5.5cqw}.mbig{font-size:15cqw;color:var(--acc)}
+.mp{font-size:3cqw;color:var(--mute)}.mq{font-size:3.6cqw;font-style:italic;color:var(--acc)}
+.mrow{display:flex;gap:2.5cqw;flex-wrap:wrap}
+.mrow div{border-top:.7cqw solid var(--acc);padding-top:1cqw;font-size:2.8cqw;color:var(--mute)}
+.mrow b{display:block;font-family:"Bricolage Grotesque",Arial,sans-serif;font-size:3.6cqw;color:var(--ink)}
+#nxt{color:var(--mute);font-size:1.15rem}
+#notes{list-style:none;margin:0;padding:0}
+#notes li{font-size:clamp(1.2rem,2.3vw,1.75rem);line-height:1.4;margin-bottom:1.1rem;padding-left:1rem;border-left:4px solid var(--acc)}
+#presenter footer{display:flex;align-items:center;gap:1rem;padding:.8rem 2rem calc(.8rem + env(safe-area-inset-bottom,0px))}
+#chips{flex:1;display:flex;gap:.4rem;overflow-x:auto;padding:4px}
+.chip{flex:none;min-width:2.6rem;height:2.6rem;border-radius:50%;border:2px solid var(--mute);background:none;color:var(--ink);font:600 .95rem "Bricolage Grotesque",Arial,sans-serif;cursor:pointer}
+.chip.on{background:var(--acc);border-color:var(--acc);color:var(--bg)}
+.chip:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+#presenter .big{min-height:56px;padding:1rem 1.8rem;font-size:1.2rem}
+</style>
+</head>
+<body>
+<div class="deck">
+
+<section class="slide on">
+<h1>The Manhattan Project</h1>
+<div class="rule"></div>
+<p>How a secret project started the nuclear age</p>
+</section>
+
+<section class="slide">
+<h2>The event that changed how the world thinks about war</h2>
+<div class="rule"></div>
+</section>
+
+<section class="slide">
+<h2>Why build it? Fear.</h2>
+<div class="row">
+<div><b>1938</b><span>Fission discovered</span></div>
+<div><b>1939</b><span>Einstein writes to Roosevelt</span></div>
+<div><b>1942</b><span>The project begins</span></div>
+</div>
+</section>
+
+<section class="slide">
+<h2>The scientists</h2>
+<div class="row">
+<div><b>Einstein</b></div>
+<div><b>Szilárd</b></div>
+<div><b>Fermi</b></div>
+<div><b>Oppenheimer</b></div>
+</div>
+<p>Many had fled fascism in Europe.</p>
+</section>
+
+<section class="slide">
+<h2>Two leaders</h2>
+<div class="row">
+<div><b>Oppenheimer</b><span>The science</span></div>
+<div><b>Groves</b><span>The whole project, for the Army</span></div>
+</div>
+</section>
+
+<section class="slide">
+<div class="big" data-count="130000" data-comma>130,000</div>
+<p>people worked on it. Most never knew why.</p>
+<div class="row">
+<div><b>Los Alamos</b></div>
+<div><b>Oak Ridge</b></div>
+<div><b>Hanford</b></div>
+</div>
+</section>
+
+<section class="slide">
+<div class="big">5:29 a.m.</div>
+<p>July 16, 1945. The New Mexico desert. The first nuclear explosion.</p>
+</section>
+
+<section class="slide">
+<h2>Hiroshima and Nagasaki</h2>
+<div class="row">
+<div><b>August 6</b><span>Hiroshima</span></div>
+<div><b>August 9</b><span>Nagasaki</span></div>
+<div><b>Japan surrenders</b></div>
+</div>
+<div class="q">Was it necessary?</div>
+</section>
+
+<section class="slide">
+<h2>Was it necessary?</h2>
+<div class="row">
+<div><b>Yes</b><span>It avoided an invasion of Japan</span></div>
+<div><b>No</b><span>Japan was already weakened</span></div>
+</div>
+<p>Historians still disagree.</p>
+</section>
+
+<section class="slide">
+<h2>The world after</h2>
+<div class="row">
+<div><b>1949</b><span>Soviet bomb</span></div>
+<div><b>Arms race</b></div>
+<div><b>Treaties</b><span>Non-Proliferation</span></div>
+<div><b>Peaceful use</b><span>Energy, medicine</span></div>
+</div>
+</section>
+
+<section class="slide">
+<div class="big">1949</div>
+<p>The Soviet Union tests its own bomb.</p>
+</section>
+
+<section class="slide">
+<div class="big" data-count="70000" data-comma>70,000</div>
+<p>About this many warheads worldwide at the 1986 peak.</p>
+</section>
+
+<section class="slide">
+<div class="big">13 days</div>
+<p>October 1962. The Cuban Missile Crisis.</p>
+</section>
+
+<section class="slide">
+<h2>Setting limits</h2>
+<div class="row">
+<div><b>1957</b><span>IAEA founded</span></div>
+<div><b>1963</b><span>Partial Test Ban Treaty</span></div>
+<div><b>1968</b><span>Non-Proliferation Treaty</span></div>
+</div>
+</section>
+
+<section class="slide">
+<h2>Beyond weapons</h2>
+<div class="row">
+<div><b>Power</b><span>Nuclear energy</span></div>
+<div><b>Medicine</b><span>Imaging and cancer treatment</span></div>
+</div>
+</section>
+
+<section class="slide">
+<div class="big">1945</div>
+<p>The last time a nuclear weapon was used in war.</p>
+</section>
+
+<section class="slide">
+<h1>Thank you for listening</h1>
+<div class="rule"></div>
+<p>Michał Skorupa, IIe</p>
+</section>
+
+</div>
+<div class="progress"><i id="bar"></i></div>
+<nav>
+<button id="prev" class="btn ghost" aria-label="Previous slide"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg><span>Back</span></button>
+<span id="count" aria-live="polite"></span>
+<button id="next" class="btn solid" aria-label="Next slide"><span>Next</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg></button>
+</nav>
+<button class="btn ghost modebtn" id="topres">Presenter view</button>
+<div id="presenter">
+<header><b>Presenter</b><span id="pstat">Not synced</span><button class="btn ghost" id="toslides">Slides view</button></header>
+<main>
+<section class="pcol"><h3>Audience sees</h3><div id="mock"></div><h3>Next</h3><div id="nxt"></div></section>
+<section class="pcol"><h3>You say</h3><ul id="notes"></ul></section>
+</main>
+<footer><button id="pp" class="btn ghost big" aria-label="Previous slide">Back</button><div id="chips"></div><button id="pn" class="btn solid big" aria-label="Next slide">Next</button></footer>
+</div>
+<script>
+(function(){
+var s=[].slice.call(document.querySelectorAll('.slide')),i=0,c=document.getElementById('count');
+var bar=document.getElementById('bar'),pv=document.getElementById('prev'),nx=document.getElementById('next'),dk=document.querySelector('.deck'),rm=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+function fmt(el,n){return el.hasAttribute('data-comma')?n.toLocaleString('en-US'):String(n)}
+function num(el){var n=+el.getAttribute('data-count'),t0=null;function f(ts){if(!t0)t0=ts;var p=Math.min((ts-t0)/1200,1),e=1-Math.pow(1-p,3);el.textContent=fmt(el,Math.round(n*e));if(p<1)requestAnimationFrame(f)}requestAnimationFrame(f)}
+function go(n,quiet){var old=i;i=Math.max(0,Math.min(s.length-1,n));dk.style.setProperty('--dx',i<old?'-40px':'40px');s.forEach(function(e,k){e.classList.toggle('on',k===i)});c.textContent=(i+1)+' / '+s.length;bar.style.width=((i+1)/s.length*100)+'%';pv.disabled=i===0;nx.disabled=i===s.length-1;var b=s[i].querySelector('.big[data-count]');if(b&&!rm)num(b);renderP();if(!quiet)bump()}
+var v=0,room=null;
+function send(){if(room)room.emit('slide',{i:i,v:v}).catch(function(){})}
+function bump(){v++;send()}
+function stat(on){var e=document.getElementById('pstat');e.textContent=on?'Synced':'Not synced';e.className=on?'on':''}
+if(window.claude&&claude.use){claude.use('room').then(function(r){if(!r)return;room=r;
+r.on('slide',function(m){var d=m.data;if(m.sameTab||!d||typeof d.v!=='number'||typeof d.i!=='number')return;if(d.v>v){v=d.v;go(d.i,true)}});
+r.onConnection(function(c){stat(c)});setInterval(send,4000);send()},function(){})}
+if(!(window.claude&&claude.use)&&window.WebSocket&&location.protocol.indexOf('http')===0){(function(){
+var q=new URLSearchParams(location.search).get('room')||'talk',ws,tries=0;
+function open(){ws=new WebSocket((location.protocol==='https:'?'wss://':'ws://')+location.host+'/sync?room='+encodeURIComponent(q));
+ws.onopen=function(){tries=0;room={emit:function(tp,d){if(ws.readyState===1)ws.send(JSON.stringify(d));return Promise.resolve()}};stat(true);send()};
+ws.onmessage=function(e){try{var d=JSON.parse(e.data);if(typeof d.v==='number'&&typeof d.i==='number'&&d.v>v){v=d.v;go(d.i,true)}}catch(x){}};
+ws.onclose=function(){room=null;stat(false);setTimeout(open,Math.min(1000*++tries,5000))}}
+open();setInterval(send,4000)})()}
+var S=[
+{t:"Title",a:[["h1","The Manhattan Project"],["p","How a secret project started the nuclear age"]],n:["Say hello and name the topic: the Manhattan Project, the secret US effort to build the first atomic bomb.","Hook: on July 16, 1945, in the New Mexico desert, the sky lit up before dawn. The world was never the same.","Say why you picked it: no other American event changed every country's idea of war."]},
+{t:"Thesis",a:[["h2","The event that changed how the world thinks about war"]],n:["Thesis: the project created the nuclear age. It ended World War II, shaped the Cold War, and still defines global security.","Mention you considered the American Revolution and US entry into WWII, but those changed one era. This changed the rules for every country.","Roadmap: why it was built, how it was done, the bombings, and the world after."]},
+{t:"Why build it? Fear",a:[["h2","Why build it? Fear."],["row",["1938|Fission discovered","1939|Einstein writes to Roosevelt","1942|The project begins"]]],n:["December 1938: German chemists Hahn and Strassmann split a uranium atom. Meitner and Frisch explained it. Scientists saw a possible bomb.","The fear was simple: Nazi Germany might build it first.","1939: Szilárd drafted a letter and Einstein signed it, warning Roosevelt. The project grew from that and officially began in 1942."]},
+{t:"The scientists",a:[["h2","The scientists"],["row",["Einstein","Szilárd","Fermi","Oppenheimer"]],["p","Many had fled fascism in Europe."]],n:["Szilárd was Hungarian, Fermi Italian, Einstein German. Many had fled persecution in Europe and ended up working for the US.","Fermi led the first controlled chain reaction in Chicago on December 2, 1942. Proof the idea worked.","Oppenheimer was an American theoretical physicist and became the face of the project."]},
+{t:"Two leaders",a:[["h2","Two leaders"],["row",["Oppenheimer|The science","Groves|The whole project, for the Army"]]],n:["General Leslie Groves was an Army engineer who had just overseen building the Pentagon. He ran logistics, security, and construction.","He chose Oppenheimer to direct the Los Alamos laboratory, a surprising choice.","Point: a soldier and a scientist working together made it possible at this speed."]},
+{t:"130,000 people",a:[["big","130,000"],["p","people worked on it. Most never knew why."],["row",["Los Alamos","Oak Ridge","Hanford"]]],n:["About 130,000 people worked on it, and it cost roughly 2 billion dollars at the time.","Los Alamos in New Mexico designed the bombs. Oak Ridge in Tennessee enriched uranium. Hanford in Washington made plutonium.","Secrecy: most workers only knew their small task. Even Vice President Truman was not told until Roosevelt died."]},
+{t:"Trinity",a:[["big","5:29 a.m."],["p","July 16, 1945. The New Mexico desert. The first nuclear explosion."]],n:["The Trinity test near Alamogordo used a plutonium bomb nicknamed the gadget.","The blast was about 21 kilotons of TNT and was seen across much of New Mexico.","Oppenheimer later said a line from the Bhagavad Gita came to mind, about becoming death, destroyer of worlds. Pause here."]},
+{t:"Hiroshima and Nagasaki",a:[["h2","Hiroshima and Nagasaki"],["row",["August 6|Hiroshima","August 9|Nagasaki","Japan surrenders"]],["q","Was it necessary?"]],n:["August 6: a uranium bomb, Little Boy, hit Hiroshima. August 9: a plutonium bomb, Fat Man, hit Nagasaki.","Estimates of deaths by the end of 1945: around 140,000 in Hiroshima and 70,000 in Nagasaki. Say it plainly and with respect.","Japan announced its surrender on August 15 and signed on September 2. Ask the question to lead into the next slide."]},
+{t:"Was it necessary?",a:[["h2","Was it necessary?"],["row",["Yes|It avoided an invasion of Japan","No|Japan was already weakened"]],["p","Historians still disagree."]],n:["Yes side: it ended the war fast and avoided a huge invasion, though estimates of invasion casualties are disputed.","No side: Japan was already weakened by blockade and firebombing, and the Soviet declaration of war on August 8 may have mattered as much.","You can say where you stand, but stress that historians still debate it. Showing both sides earns credit."]},
+{t:"The world after",a:[["h2","The world after"],["row",["1949|Soviet bomb","Arms race","Treaties|Non-Proliferation","Peaceful use|Energy, medicine"]]],n:["Overview slide: four consequences are coming up.","Move quickly. This is the core of your thesis, so bring energy.","Connect back to the thesis: the bomb changed politics, science, and security for everyone."]},
+{t:"1949",a:[["big","1949"],["p","The Soviet Union tests its own bomb."]],n:["The US monopoly lasted only four years. The Soviet test was on August 29, 1949.","Spies like Klaus Fuchs helped, but Soviet scientists were strong too. Don't overstate espionage.","Result: the arms race. The US built the hydrogen bomb in 1952 and the Soviets followed soon after."]},
+{t:"Arms race",a:[["big","70,000"],["p","About this many warheads worldwide at the 1986 peak."]],n:["The two superpowers built tens of thousands of warheads, far more than needed to destroy each other many times over.","Today there are roughly 12,000, still a major risk. Say roughly.","Nine countries have nuclear weapons: US, Russia, UK, France, China, India, Pakistan, Israel (undeclared), and North Korea."]},
+{t:"Cuban Missile Crisis",a:[["big","13 days"],["p","October 1962. The Cuban Missile Crisis."]],n:["Soviet missiles in Cuba, about 150 kilometers from Florida. Kennedy ordered a naval blockade.","For 13 days the world held its breath. Many historians call it the closest we have come to nuclear war.","It ended in a deal, and afterwards a direct hotline between Washington and Moscow was set up."]},
+{t:"Setting limits",a:[["h2","Setting limits"],["row",["1957|IAEA founded","1963|Partial Test Ban Treaty","1968|Non-Proliferation Treaty"]]],n:["1957: the International Atomic Energy Agency was created to promote peaceful use and monitor safety.","1963: the Partial Test Ban Treaty ended nuclear tests in the air, in space, and under water.","1968: the Non-Proliferation Treaty. Nuclear states promise to disarm eventually, others promise not to build weapons. Most countries joined."]},
+{t:"Beyond weapons",a:[["h2","Beyond weapons"],["row",["Power|Nuclear energy","Medicine|Imaging and cancer treatment"]]],n:["The same science powers nuclear plants, which supply roughly a tenth of the world's electricity.","In medicine, radioactive isotopes are used for imaging and for treating cancer.","Balance the story: the same discovery brought both danger and benefit."]},
+{t:"1945",a:[["big","1945"],["p","The last time a nuclear weapon was used in war."]],n:["More than 80 years later, no nuclear weapon has been used in war.","Some credit deterrence, others luck and treaties. Mention both.","Return to your thesis: it changed how the world thinks about war, and we still live with that."]},
+{t:"Thank you",a:[["h1","Thank you for listening"],["p","Michał Skorupa, IIe"]],n:["Thank the audience and the teacher.","Invite questions.","Likely questions: Was it necessary? Who has nuclear weapons today? Could it happen again? Have short answers ready."]}
+];
+function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!==undefined)e.textContent=x;return e}
+var mock=document.getElementById('mock'),nxt=document.getElementById('nxt'),notes=document.getElementById('notes'),chips=document.getElementById('chips'),pp=document.getElementById('pp'),pn=document.getElementById('pn');
+S.forEach(function(_,k){var b=el('button','chip',k+1);b.setAttribute('aria-label','Go to slide '+(k+1));b.onclick=function(){go(k)};chips.appendChild(b)});
+function renderP(){var w=el('div','mi');S[i].a.forEach(function(r){if(r[0]==='row'){var rw=el('div','mrow');r[1].forEach(function(x){var q=x.split('|'),d=el('div');d.appendChild(el('b','',q[0]));if(q[1])d.appendChild(el('span','',q[1]));rw.appendChild(d)});w.appendChild(rw)}else w.appendChild(el('div','m'+r[0],r[1]))});
+mock.textContent='';mock.appendChild(w);
+nxt.textContent=i<S.length-1?(i+2)+'. '+S[i+1].t:'End of the talk';
+notes.textContent='';S[i].n.forEach(function(x){notes.appendChild(el('li','',x))});
+[].forEach.call(chips.children,function(c,k){c.classList.toggle('on',k===i);if(k===i)c.scrollIntoView({block:'nearest',inline:'center'})});
+pp.disabled=i===0;pn.disabled=i===S.length-1}
+pp.onclick=function(){go(i-1)};pn.onclick=function(){go(i+1)};
+function mode(m){document.body.setAttribute('data-mode',m);try{localStorage.setItem('mode',m)}catch(e){}}
+document.getElementById('topres').onclick=function(){mode('presenter')};
+document.getElementById('toslides').onclick=function(){mode('slides')};
+document.addEventListener('keydown',function(e){if(e.key==='p'||e.key==='P')mode(document.body.getAttribute('data-mode')==='presenter'?'slides':'presenter')});
+var m0='slides';try{m0=localStorage.getItem('mode')||'slides'}catch(e){}
+if(location.hash==='#presenter')m0='presenter';
+document.body.setAttribute('data-mode',m0);
+document.getElementById('next').onclick=function(){go(i+1)};
+document.getElementById('prev').onclick=function(){go(i-1)};
+document.addEventListener('keydown',function(e){
+if(['ArrowRight','PageDown',' '].indexOf(e.key)>-1){e.preventDefault();go(i+1)}
+if(['ArrowLeft','PageUp'].indexOf(e.key)>-1){e.preventDefault();go(i-1)}});
+var x=null;
+document.addEventListener('touchstart',function(e){x=e.touches[0].clientX},{passive:true});
+document.addEventListener('touchend',function(e){if(x===null)return;var d=e.changedTouches[0].clientX-x;if(Math.abs(d)>50)go(d<0?i+1:i-1);x=null});
+go(0,true);
+})();
+</script>
+</body>
+</html>
